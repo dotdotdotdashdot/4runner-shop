@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>4Runner Shop</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg: #111;
+  --surface: #1c1c1c;
+  --surface2: #252525;
+  --surface3: #2e2e2e;
+  --border: #333;
+  --accent: #f0a500;
+  --accent-dim: rgba(240,165,0,0.12);
+  --red: #e05252;
+  --red-dim: rgba(224,82,82,0.12);
+  --yellow: #e8c340;
+  --yellow-dim: rgba(232,195,64,0.12);
+  --green: #52c07a;
+  --green-dim: rgba(82,192,122,0.12);
+  --blue: #4a9eff;
+  --blue-dim: rgba(74,158,255,0.12);
+  --text: #f0f0f0;
+  --text2: #888;
+  --text3: #555;
+  --radius: 12px;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  min-height: 100vh;
+  padding-bottom: 90px;
+  overscroll-behavior: none;
+}
+
+/* ── HEADER ── */
+.header {
+  padding: 16px 18px 10px;
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--border);
+}
+.header-row { display: flex; align-items: center; justify-content: space-between; }
+.truck-id { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+.truck-name { font-size: 20px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+.mileage-pill {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text);
+}
+.mileage-pill span { color: var(--accent); }
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  flex: 1;
+  padding: 11px 6px 9px;
+  text-align: center;
+  font-size: 10px;
+  color: var(--text2);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  transition: color 0.15s;
+}
+.tab .ti { font-size: 19px; display: block; margin-bottom: 2px; }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── PAGES ── */
+.page { display: none; padding: 16px; }
+.page.active { display: block; }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 20px 0 10px;
+}
+.section-label:first-child { margin-top: 0; }
+
+/* ── PROBLEM CARD ── */
+.problem-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  position: relative;
+}
+.problem-card:active { opacity: 0.85; }
+.problem-card.priority-critical { border-left: 3px solid var(--red); }
+.problem-card.priority-high { border-left: 3px solid var(--yellow); }
+.problem-card.priority-medium { border-left: 3px solid var(--accent); }
+.problem-card.priority-low { border-left: 3px solid var(--green); }
+
+.pc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.pc-name { font-size: 15px; font-weight: 700; line-height: 1.2; }
+.pc-badges { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.badge-critical { background: var(--red-dim); color: var(--red); }
+.badge-high { background: var(--yellow-dim); color: var(--yellow); }
+.badge-medium { background: var(--accent-dim); color: var(--accent); }
+.badge-low { background: var(--green-dim); color: var(--green); }
+.badge-cost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+.badge-diy { background: var(--blue-dim); color: var(--blue); }
+.badge-draft { background: rgba(74, 158, 255, 0.15); color: #4a9eff; border: 1px solid rgba(74, 158, 255, 0.4); }
+
+.pc-desc { font-size: 13px; color: var(--text2); margin-top: 6px; line-height: 1.4; }
+.pc-meta { display: flex; gap: 12px; margin-top: 8px; }
+.pc-meta-item { font-size: 11px; color: var(--text3); }
+.pc-meta-item span { color: var(--text2); font-weight: 600; }
+
+.pc-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.pc-action-text { font-size: 12px; color: var(--accent); font-weight: 600; }
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 16px;
+  scrollbar-width: none;
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.filter-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+
+/* ── ADD PROBLEM ── */
+.add-btn {
+  width: 100%;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 16px;
+  letter-spacing: 0.2px;
+}
+.add-btn:active { opacity: 0.85; }
+
+/* ── RECOMMENDED SECTION ── */
+.rec-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rec-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.rec-info { flex: 1; }
+.rec-name { font-size: 14px; font-weight: 700; }
+.rec-detail { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.rec-overdue { font-size: 11px; color: var(--red); font-weight: 700; margin-top: 3px; }
+.rec-soon { font-size: 11px; color: var(--yellow); font-weight: 700; margin-top: 3px; }
+
+
+
+/* ── PROJECT PORTFOLIO ── */
+.portfolio-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.portfolio-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.portfolio-title { font-size: 15px; font-weight: 800; color: var(--text); }
+.portfolio-meta { font-size: 11px; color: var(--text2); margin-top: 4px; }
+.portfolio-desc { font-size: 13px; color: var(--text2); line-height: 1.45; margin-top: 8px; }
+.portfolio-photos { display: flex; gap: 6px; overflow-x: auto; margin-top: 10px; padding-bottom: 2px; }
+.portfolio-photo-thumb { width: 72px; height: 54px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); flex-shrink: 0; background: var(--surface2); }
+.site-config {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.publish-box {
+  background: var(--blue-dim);
+  border: 1px solid var(--blue);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.publish-output {
+  width: 100%;
+  min-height: 170px;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  resize: vertical;
+}
+
+/* ── DETAIL MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 0;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+}
+.modal-drag {
+  width: 40px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 14px auto 0;
+}
+.modal-header {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-title { font-size: 19px; font-weight: 800; color: var(--accent); }
+.modal-sub { font-size: 13px; color: var(--text2); margin-top: 3px; }
+.modal-body { padding: 16px 18px; }
+.modal-section { margin-bottom: 20px; }
+.modal-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+/* ── PART RESULT ── */
+.part-result {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.part-result-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.part-name { font-size: 14px; font-weight: 700; }
+.part-price { font-size: 16px; font-weight: 800; color: var(--green); }
+.part-source { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.part-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ── YOUTUBE RESULT ── */
+.yt-result {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  text-decoration: none;
+  color: inherit;
+}
+.yt-thumb {
+  width: 80px;
+  height: 52px;
+  border-radius: 6px;
+  background: var(--surface3);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+.yt-info { flex: 1; }
+.yt-title { font-size: 13px; font-weight: 600; line-height: 1.3; }
+.yt-channel { font-size: 11px; color: var(--text2); margin-top: 3px; }
+.yt-views { font-size: 11px; color: var(--text3); }
+
+/* ── AI LOADING ── */
+.ai-loading {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--text2);
+  font-size: 14px;
+}
+.spinner {
+  display: inline-block;
+  width: 24px; height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-bottom: 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── FORMS ── */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--text);
+  font-size: 15px;
+  font-family: var(--font);
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-select { appearance: none; }
+
+.btn-row { display: flex; gap: 8px; margin-top: 4px; }
+.btn {
+  flex: 1;
+  padding: 13px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+}
+.btn:active { opacity: 0.8; }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-red { background: var(--red-dim); color: var(--red); border: 1px solid var(--red); }
+.btn-blue { background: rgba(74, 158, 255, 0.15); color: #4a9eff; border: 1px solid #4a9eff; }
+
+/* ── EMPTY ── */
+.empty {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--text3);
+}
+.empty-icon { font-size: 44px; margin-bottom: 12px; }
+.empty-title { font-size: 16px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; line-height: 1.5; }
+
+/* ── SEVERITY PICKER ── */
+.sev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sev-option {
+  padding: 10px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  text-align: center;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.15s;
+}
+.sev-option.selected-critical { border-color: var(--red); background: var(--red-dim); color: var(--red); }
+.sev-option.selected-high { border-color: var(--yellow); background: var(--yellow-dim); color: var(--yellow); }
+.sev-option.selected-medium { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+.sev-option.selected-low { border-color: var(--green); background: var(--green-dim); color: var(--green); }
+
+/* ── MILEAGE MODAL ── */
+#modal-mileage .modal { max-height: 50vh; }
+
+/* ── STEP INDICATOR ── */
+.step-bar {
+  display: flex;
+  gap: 4px;
+  padding: 0 18px 14px;
+}
+.step-dot {
+  height: 3px;
+  flex: 1;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background 0.2s;
+}
+.step-dot.done { background: var(--accent); }
+
+.ai-summary-box {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.cost-range {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.cost-box {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+.cost-box.diy { border-color: var(--blue); }
+.cost-box.diy .cost-box-val { color: var(--blue); }
+.cost-box.shop { border-color: var(--accent); }
+.cost-box.shop .cost-box-val { color: var(--accent); }
+
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.tag {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text2);
+}
+
+/* ── DONE TOGGLE ── */
+.problem-card.done { opacity: 0.45; }
+.done-check {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+/* ── IN-APP CAMERA ── */
+.cam-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 300;
+  display: none;
+  flex-direction: column;
+}
+.cam-overlay.open { display: flex; }
+.cam-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+}
+.cam-title { font-size: 15px; font-weight: 700; color: #fff; }
+.cam-close {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+#cam-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.cam-guide {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%; max-width: 320px;
+  aspect-ratio: 1.6;
+  border: 2px solid rgba(240,165,0,0.7);
+  border-radius: 10px;
+  pointer-events: none;
+}
+.cam-guide::before, .cam-guide::after {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  border-color: var(--accent);
+  border-style: solid;
+}
+.cam-guide::before { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-radius: 8px 0 0 0; }
+.cam-guide::after { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 8px 0; }
+.cam-guide-label {
+  position: absolute;
+  bottom: -28px; left: 0; right: 0;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  font-weight: 600;
+}
+.cam-footer {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 30px 30px calc(30px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+}
+.cam-shutter {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: #fff;
+  border: 4px solid rgba(255,255,255,0.4);
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
+  transition: transform 0.1s;
+}
+.cam-shutter:active { transform: scale(0.92); }
+.cam-shutter-inner {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  background: #fff;
+}
+
+/* reading state */
+.cam-reading {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 20;
+}
+.cam-reading.show { display: flex; }
+.cam-reading-icon { font-size: 48px; }
+.cam-reading-text { font-size: 16px; font-weight: 700; color: #fff; }
+.cam-reading-sub { font-size: 13px; color: rgba(255,255,255,0.5); }
+
+/* result panel */
+.cam-result {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 18px calc(20px + env(safe-area-inset-bottom));
+  z-index: 20;
+  display: none;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+.cam-result.show { display: block; }
+.cam-result-title { font-size: 17px; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
+.cam-result-sub { font-size: 13px; color: var(--text2); margin-bottom: 16px; }
+
+.extracted-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+.extracted-row:last-of-type { border-bottom: none; }
+.extracted-label { font-size: 12px; color: var(--text2); width: 80px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.3px; }
+.extracted-val { font-size: 15px; font-weight: 700; color: var(--text); flex: 1; }
+.extracted-input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-size: 14px;
+  width: 100%;
+  font-family: var(--font);
+}
+.extracted-input:focus { outline: none; border-color: var(--accent); }
+
+/* no-save notice */
+.no-save-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(82,192,122,0.1);
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--green);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-row">
+    <div>
+      <div class="truck-id">1998 Toyota · SR5 · 4WD</div>
+      <div class="truck-name">4Runner Shop</div>
+    </div>
+    <div class="mileage-pill" onclick="openModal('modal-mileage')">
+      <span id="hdr-miles">373,077</span> mi
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('problems',this)"><span class="ti">🔧</span>Problems</div>
+  <div class="tab" onclick="showTab('recommended',this)"><span class="ti">📋</span>Scheduled</div>
+  <div class="tab" onclick="openCam()"><span class="ti">📷</span>Scan</div>
+  <div class="tab" onclick="showTab('portfolio',this)"><span class="ti">📚</span>Portfolio</div>
+</div>
+
+<div id="tab-problems" class="page active">
+  <button class="add-btn" onclick="openAddProblem()">+ Add a Problem</button>
+  
+  <div class="filter-bar" id="filter-bar">
+    <div class="filter-chip active" onclick="setFilter('all',this)">All</div>
+    <div class="filter-chip" onclick="setFilter('critical',this)">Critical</div>
+    <div class="filter-chip" onclick="setFilter('high',this)">High Priority</div>
+    <div class="filter-chip" onclick="setFilter('diy',this)">Easy DIY</div>
+    <div class="filter-chip" onclick="setFilter('drafts',this)">Drafts 📝</div>
+  </div>
+
+  <div id="drafts-section" style="display:none; margin-bottom: 24px;">
+    <div class="section-label" style="color: #4a9eff;">Unfinished Scans & Notes (Drafts)</div>
+    <div id="drafts-list"></div>
+  </div>
+
+  <div class="section-label" id="list-heading">Active Diagnostics & Repair Backlog</div>
+  <div id="problems-list"></div>
+</div>
+
+<div id="tab-recommended" class="page">
+  <div class="section-label">Imminent Fluids & Safety Intervals</div>
+  <div id="sched-list"></div>
+</div>
+
+
+
+<div id="tab-portfolio" class="page">
+  <button class="add-btn" onclick="openAddPortfolio()">+ New Build Update</button>
+
+  <div class="site-config">
+    <div class="section-label">Google Sites Publishing Target</div>
+    <div class="form-group">
+      <label class="form-label">Selected Google Sites Page Name</label>
+      <input type="text" id="site-page-name" class="form-input" placeholder="e.g., 4Runner Build Journal">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Google Sites Page Edit URL</label>
+      <input type="url" id="site-page-url" class="form-input" placeholder="Paste your Google Sites edit page URL here">
+    </div>
+    <button class="btn btn-blue" style="width:100%;" onclick="saveSiteTarget()">Save Publishing Target</button>
+    <div class="pc-desc" style="margin-top:10px;">This static app cannot directly edit Google Sites without a Google Apps Script/API bridge. For now, it creates a polished publish block, copies it, and opens your selected Google Sites page.</div>
+  </div>
+
+  <div class="section-label">Project Portfolio / Build Journal</div>
+  <div id="portfolio-list"></div>
+</div>
+
+<div class="cam-overlay" id="cam-overlay">
+  <video id="cam-video" autoplay playsinline muted></video>
+  <canvas id="cam-canvas" style="display:none"></canvas>
+
+  <div class="cam-header">
+    <div class="cam-title">📷 Scan Receipt or Sticker</div>
+    <button class="cam-close" onclick="closeCam()">✕</button>
+  </div>
+
+  <div class="cam-guide">
+    <div class="cam-guide-label">Align receipt inside frame</div>
+  </div>
+
+  <div class="cam-footer">
+    <div class="cam-shutter" onclick="captureAndRead()">
+      <div class="cam-shutter-inner"></div>
+    </div>
+  </div>
+
+  <div class="cam-reading" id="cam-reading">
+    <div class="cam-reading-icon">🔍</div>
+    <div class="cam-reading-text">Reading document...</div>
+    <div class="cam-reading-sub">Image deleted from memory after scan</div>
+    <div style="margin-top:8px"><span class=\"spinner\"></span></div>
+  </div>
+
+  <div class="cam-result" id="cam-result">
+    <div class="no-save-badge">🔒 Photo never saved — deleted immediately after scan</div>
+    <div class="cam-result-title" id="cam-result-title">Scan Complete</div>
+    <div class="cam-result-sub" id="cam-result-sub">Review details or save as draft to finish later</div>
+
+    <div id="cam-extracted-fields"></div>
+
+    <div class="btn-row" style="margin-top:20px">
+      <button class="btn btn-blue" onclick="saveAsDraftFromScan()">Review Later 📝</button>
+      <button class="btn btn-primary" onclick="confirmScanData()">Process Now ✅</button>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="modal-overlay" id="modal-portfolio" onclick="closeModalOnBg(event, 'modal-portfolio')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="portfolio-modal-title">New Build Update</div>
+      <div class="modal-sub">Add photos, quick notes, and generate a clean project update</div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="portfolio-id">
+      <div class="form-group">
+        <label class="form-label">Project Name</label>
+        <input type="text" id="portfolio-project" class="form-input" placeholder="e.g., 1998 4Runner Refresh">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Update Title</label>
+        <input type="text" id="portfolio-title" class="form-input" placeholder="e.g., Lower Ball Joint Replacement">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select id="portfolio-category" class="form-select">
+          <option>Maintenance</option>
+          <option>Suspension</option>
+          <option>Engine</option>
+          <option>Drivetrain</option>
+          <option>Interior</option>
+          <option>Exterior</option>
+          <option>Electrical</option>
+          <option>Fabrication</option>
+          <option>Off-Road</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Photos</label>
+        <input type="file" id="portfolio-photos" class="form-input" accept="image/*" multiple>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Brief Description / Raw Notes</label>
+        <textarea id="portfolio-notes" class="form-textarea" placeholder="e.g., Installed OEM LBJs, cleaned mating surfaces, torqued everything, test drove after."></textarea>
+      </div>
+      <div class="btn-row" style="margin-top:24px">
+        <button class="btn btn-ghost" onclick="closeModal('modal-portfolio')">Cancel</button>
+        <button class="btn btn-primary" onclick="savePortfolioEntry()">Save Entry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-problem" onclick="closeModalOnBg(event, 'modal-problem')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="problem-modal-title">Diagnose New Symptom</div>
+      <div class="modal-sub">AI maps this directly to 3rd Gen 4Runner parameters</div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="form-id">
+      <input type="hidden" id="form-is-draft" value="false">
+      
+      <div class="form-group">
+        <label class="form-label">Symptom or Problem Title</label>
+        <input type="text" id="form-title" class="form-input" placeholder="e.g., Lower Ball Joints clunking, Cracked Windshield">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Extended Notes / Context</label>
+        <textarea id="form-desc" class="form-textarea" placeholder="e.g., Noticeable sound when making full turns. Sourced from previous owner notes. Still need to verify part brand tomorrow."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Goal for the Car</label>
+        <select id="form-goal" class="form-select">
+          <option value="simple-maintenance">Simple maintenance / keep it reliable</option>
+          <option value="high-mileage-maintenance">High mileage maintenance catch-up</option>
+          <option value="full-rebuild-high-mileage">Full rebuild for high mileage</option>
+          <option value="daily-driver">Daily driver reliability</option>
+          <option value="off-road-build">Off-road / trail-ready build</option>
+          <option value="budget-fix">Budget fix only</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Urgency & Safety Class</label>
+        <div class="sev-grid">
+          <div class="sev-option" id="sev-critical" onclick="selectSev('critical')">Critical</div>
+          <div class="sev-option" id="sev-high" onclick="selectSev('high')">High</div>
+          <div class="sev-option" id="sev-medium" onclick="selectSev('medium')">Medium</div>
+          <div class="sev-option" id="sev-low" onclick="selectSev('low')">Low</div>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:24px">
+        <button class="btn btn-ghost" onclick="closeModal('modal-problem')">Cancel</button>
+        <button class="btn btn-blue" onclick="saveForm(true)">Save Draft 📝</button>
+        <button class="btn btn-primary" id="btn-submit-problem" onclick="saveForm(false)">Analyze & Add ✅</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-detail" onclick="closeModalOnBg(event, 'modal-detail')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-mileage" onclick="closeModalOnBg(event, 'modal-mileage')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <div class="modal-title">Update Current Odometer</div>
+      <div class="modal-sub">Synchronizes all fluid schedules and intervals</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Odometer Reading (mi)</label>
+        <input type="number" id="input-mileage" class="form-input" value="373077">
+      </div>
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn btn-ghost" onclick="closeModal('modal-mileage')">Cancel</button>
+        <button class="btn btn-primary" onclick="updateMileage()">Update Mileage</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// INITIAL DATA
+let currentMileage = 373077;
+let activeFilter = 'all';
+let selectedSeverity = 'medium';
+
+const goalLabels = {
+  'simple-maintenance': 'Simple Maintenance',
+  'high-mileage-maintenance': 'High Mileage Maintenance',
+  'full-rebuild-high-mileage': 'Full Rebuild / High Mileage',
+  'daily-driver': 'Daily Driver Reliability',
+  'off-road-build': 'Off-Road Build',
+  'budget-fix': 'Budget Fix'
+};
+
+function getGoalLabel(goal) {
+  return goalLabels[goal] || goalLabels['simple-maintenance'];
+}
+let streamRef = null;
+let currentScanData = null;
+let portfolioEntries = [];
+let siteTarget = { name: '', url: '' };
+
+let problems = [
+  {
+    id: "p1",
+    title: "Replace Front Lower Ball Joints (LBJs)",
+    desc: "Critical safety maintenance item on 3rd Gen 4Runners. Factory ones can fail without warning causing catastrophic suspension drop.",
+    severity: "critical",
+    done: false,
+    isDraft: false,
+    goal: "high-mileage-maintenance",
+    aiResult: {
+      diagnosis: "OEM failure risk common above 150k miles. Highly recommended to use only Toyota Genuine parts for this fix.",
+      difficulty: "Hard (Requires torque wrench & ball joint separators)",
+      diyCost: "$160",
+      shopCost: "$520",
+      tags: ["Safety Risk", "Suspension", "OEM Recommended"],
+      parts: [
+        { name: "Toyota OEM Left LBJ (43340-39465)", price: "$84.50", source: "RockAuto", url: "https://www.rockauto.com/en/parts/toyota,4334039465,ball+joint,10070" },
+        { name: "Toyota OEM Right LBJ (43330-39585)", price: "$84.50", source: "RockAuto", url: "https://www.rockauto.com/en/parts/toyota,4333039585,ball+joint,10070" }
+      ],
+      videos: [
+        { title: "3rd Gen 4Runner LBJ Replacement Complete Guide", channel: "Timmy the Toolman", views: "142K views", url: "https://www.youtube.com/results?search_query=3rd+gen+4runner+lower+ball+joint+timmy+the+toolman" }
+      ]
+    }
+  },
+  {
+    id: "p2",
+    title: "Cracked Windshield",
+    desc: "Impact crack spanning driver visibility line. Glass is structurally sound for now but requires full seal assembly swap.",
+    severity: "medium",
+    done: false,
+    isDraft: false,
+    goal: "simple-maintenance",
+    aiResult: {
+      diagnosis: "Standard multi-layered safety glass. Recommend local windshield professionals to preserve frame seal integrity.",
+      difficulty: "Expert / Specialized Tools",
+      diyCost: "$190",
+      shopCost: "$340",
+      tags: ["Body", "Glass"],
+      parts: [
+        { name: "Front Windshield Glass Moulding/Trim", price: "$32.10", source: "Amazon", url: "https://www.amazon.com/s?k=1998+4runner+windshield+moulding" }
+      ],
+      videos: [
+        { title: "Toyota 4Runner Windshield Removal & Glass Trim Replace", channel: "Glass Professional DIY", views: "38K views", url: "https://www.youtube.com/results?search_query=1998+4runner+windshield+replacement" }
+      ]
+    }
+  }
+];
+
+let scheduledMaintenance = [
+  { id: "s1", name: "Engine Oil & Filter", interval: 5000, lastDone: 371000, icon: "🛢️", component: "3.4L 5VZ-FE Engine" },
+  { id: "s2", name: "Timing Belt & Water Pump", interval: 90000, lastDone: 368000, icon: "⚙️", component: "Front Engine Block Assembly" },
+  { id: "s3", name: "Transmission Fluid Exchange", interval: 30000, lastDone: 345000, icon: "⚙️", component: "A340F Automatic Transmission" },
+  { id: "s4", name: "Rear Differential Gear Lubricant", interval: 30000, lastDone: 372000, icon: "🏎️", component: "4WD Axle Assembly" }
+];
+
+// LOCALSTORAGE CONTROLS
+function loadData() {
+  const localMiles = localStorage.getItem('4r_miles');
+  if (localMiles) currentMileage = parseInt(localMiles);
+  
+  const localProbs = localStorage.getItem('4r_probs');
+  if (localProbs) problems = JSON.parse(localProbs);
+
+  const localSched = localStorage.getItem('4r_sched');
+  if (localSched) scheduledMaintenance = JSON.parse(localSched);
+
+  const localPortfolio = localStorage.getItem('4r_portfolio');
+  if (localPortfolio) portfolioEntries = JSON.parse(localPortfolio);
+
+  const localSiteTarget = localStorage.getItem('4r_site_target');
+  if (localSiteTarget) siteTarget = JSON.parse(localSiteTarget);
+
+  document.getElementById('hdr-miles').innerText = currentMileage.toLocaleString();
+  document.getElementById('input-mileage').value = currentMileage;
+  const siteNameInput = document.getElementById('site-page-name');
+  const siteUrlInput = document.getElementById('site-page-url');
+  if (siteNameInput) siteNameInput.value = siteTarget.name || '';
+  if (siteUrlInput) siteUrlInput.value = siteTarget.url || '';
+}
+
+function saveData() {
+  localStorage.setItem('4r_miles', currentMileage);
+  localStorage.setItem('4r_probs', JSON.stringify(problems));
+  localStorage.setItem('4r_sched', JSON.stringify(scheduledMaintenance));
+  localStorage.setItem('4r_portfolio', JSON.stringify(portfolioEntries));
+  localStorage.setItem('4r_site_target', JSON.stringify(siteTarget));
+}
+
+// NAVIGATION
+function showTab(tabId, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  
+  if (el) el.classList.add('active');
+  const page = document.getElementById(`tab-${tabId}`);
+  if (page) page.classList.add('active');
+}
+
+// FILTER HANDLERS
+function setFilter(filter, el) {
+  activeFilter = filter;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderProblems();
+}
+
+// RENDER ALL CARDS
+function renderProblems() {
+  const container = document.getElementById('problems-list');
+  const draftsContainer = document.getElementById('drafts-list');
+  const draftsSection = document.getElementById('drafts-section');
+  
+  container.innerHTML = '';
+  draftsContainer.innerHTML = '';
+
+  const activeProblems = problems.filter(p => !p.isDraft);
+  const draftProblems = problems.filter(p => p.isDraft);
+
+  // Handle showing the general drafts shelf
+  if (draftProblems.length > 0 && activeFilter === 'all') {
+    draftsSection.style.display = 'block';
+  } else {
+    draftsSection.style.display = 'none';
+  }
+
+  // Render Drafts Section
+  draftProblems.forEach(p => {
+    if (activeFilter !== 'all' && activeFilter !== 'drafts') return;
+    
+    const card = document.createElement('div');
+    card.className = `problem-card priority-low`;
+    card.onclick = () => openEditProblem(p.id);
+    card.innerHTML = `
+      <div class="pc-top">
+        <div>
+          <div class="pc-name" style="color: #4a9eff;">📝 ${p.title || 'Untitled Draft Scan'}</div>
+          <div class="pc-desc">${p.desc || 'No extended notes provided yet. Tap to fill or analyze.'}</div>
+        </div>
+        <div class="pc-badges">
+          <span class="badge badge-draft">Draft Note</span>
+          <span class="badge badge-cost">${getGoalLabel(p.goal)}</span>
+        </div>
+      </div>
+      <div class="pc-action">
+        <span class="pc-action-text" style="color:#4a9eff">Tap to fill rest & analyze →</span>
+      </div>
+    `;
+    draftsContainer.appendChild(card);
+  });
+
+  // Filter and Render Active Problems
+  let filtered = activeProblems;
+  if (activeFilter === 'critical') filtered = activeProblems.filter(p => p.severity === 'critical');
+  if (activeFilter === 'high') filtered = activeProblems.filter(p => p.severity === 'high');
+  if (activeFilter === 'diy') filtered = activeProblems.filter(p => p.aiResult && p.aiResult.difficulty.toLowerCase().includes('easy') || p.aiResult && p.aiResult.difficulty.toLowerCase().includes('medium'));
+  
+  if (activeFilter === 'drafts' && draftProblems.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">📝</div>
+        <div class="empty-title">No Pending Drafts</div>
+        <div class="empty-sub">Scanned receipts or temporary reminders marked for later appear here.</div>
+      </div>`;
+    return;
+  }
+
+  if (filtered.length === 0 && activeFilter !== 'drafts') {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🎉</div>
+        <div class="empty-title">All Filters Clear</div>
+        <div class="empty-sub">No issues reported matching this specific view.</div>
+      </div>`;
+    return;
+  }
+
+  if (activeFilter !== 'drafts') {
+    filtered.forEach(p => {
+      const card = document.createElement('div');
+      card.className = `problem-card priority-${p.severity} ${p.done ? 'done' : ''}`;
+      card.onclick = () => openDetail(p.id);
+
+      let badgesHtml = `<span class="badge badge-${p.severity}">${p.severity}</span>`;
+      badgesHtml += `<span class="badge badge-cost">${getGoalLabel(p.goal)}</span>`;
+      if (p.aiResult) {
+        badgesHtml += `<span class="badge badge-cost">DIY: ${p.aiResult.diyCost}</span>`;
+      }
+
+      card.innerHTML = `
+        ${p.done ? '<div class="done-check">✓</div>' : ''}
+        <div class="pc-top">
+          <div>
+            <div class="pc-name">${p.title}</div>
+            <div class="pc-desc">${p.desc}</div>
+          </div>
+          <div class="pc-badges">${badgesHtml}</div>
+        </div>
+        ${p.aiResult ? `
+          <div class="pc-meta">
+            <div class="pc-meta-item">Goal: <span>${getGoalLabel(p.goal)}</span></div>
+            <div class="pc-meta-item">Diff: <span>${p.aiResult.difficulty}</span></div>
+          </div>
+          <div class="pc-action">
+            <span class="pc-action-text">View Part Lists & Tutorials →</span>
+          </div>
+        ` : ''}
+      `;
+      container.appendChild(card);
+    });
+  }
+}
+
+function renderScheduled() {
+  const container = document.getElementById('sched-list');
+  container.innerHTML = '';
+
+  // Sort by urgency status
+  const list = scheduledMaintenance.map(s => {
+    const milesSince = currentMileage - s.lastDone;
+    const milesLeft = s.interval - milesSince;
+    let status = 'good';
+    if (milesLeft <= 0) status = 'overdue';
+    else if (milesLeft < 1200) status = 'soon';
+    return { ...s, milesLeft, status };
+  });
+
+  list.sort((a,b) => {
+    if (a.status === 'overdue' && b.status !== 'overdue') return -1;
+    if (b.status === 'overdue' && a.status !== 'overdue') return 1;
+    return a.milesLeft - b.milesLeft;
+  });
+
+  list.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'rec-card';
+    
+    let badgeHtml = `<div class="rec-detail">Every ${s.interval.toLocaleString()} mi (Last done: ${s.lastDone.toLocaleString()} mi)</div>`;
+    if (s.status === 'overdue') {
+      badgeHtml += `<div class="rec-overdue">⚠️ OVERDUE BY ${(Math.abs(s.milesLeft)).toLocaleString()} MILES</div>`;
+    } else if (s.status === 'soon') {
+      badgeHtml += `<div class="rec-soon">⏳ Due very soon in ${s.milesLeft.toLocaleString()} mi</div>`;
+    } else {
+      badgeHtml += `<div class="rec-detail" style="color:var(--green)">✓ Good for ${s.milesLeft.toLocaleString()} mi</div>`;
+    }
+
+    card.innerHTML = `
+      <div class="rec-icon" style="background:var(--surface2)">${s.icon}</div>
+      <div class="rec-info">
+        <div class="rec-name">${s.name}</div>
+        <div class="rec-detail" style="color:var(--text3)">${s.component}</div>
+        ${badgeHtml}
+      </div>
+      <button class="btn btn-ghost" style="padding:8px 12px; font-size:12px; flex-shrink:0; width:auto;" onclick="logScheduledService('${s.id}', event)">Log Completed</button>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// MODAL SYSTEMS
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModalOnBg(e, id) { if(e.target.id === id) closeModal(id); }
+
+function selectSev(sev) {
+  selectedSeverity = sev;
+  document.querySelectorAll('.sev-option').forEach(o => {
+    o.className = 'sev-option';
+    if(o.id === `sev-${sev}`) o.classList.add(`selected-${sev}`);
+  });
+}
+
+function openAddProblem() {
+  document.getElementById('problem-modal-title').innerText = "Diagnose New Symptom";
+  document.getElementById('form-id').value = '';
+  document.getElementById('form-is-draft').value = 'false';
+  document.getElementById('form-title').value = '';
+  document.getElementById('form-desc').value = '';
+  document.getElementById('form-goal').value = 'simple-maintenance';
+  selectSev('medium');
+  openModal('modal-problem');
+}
+
+function openEditProblem(id) {
+  const target = problems.find(p => p.id === id);
+  if (!target) return;
+
+  document.getElementById('problem-modal-title').innerText = "Review Saved Draft Note";
+  document.getElementById('form-id').value = target.id;
+  document.getElementById('form-is-draft').value = target.isDraft ? 'true' : 'false';
+  document.getElementById('form-title').value = target.title || '';
+  document.getElementById('form-desc').value = target.desc || '';
+  document.getElementById('form-goal').value = target.goal || 'simple-maintenance';
+  selectSev(target.severity || 'medium');
+  openModal('modal-problem');
+}
+
+// FORM SUBMISSIONS
+function saveForm(saveAsDraft = false) {
+  const id = document.getElementById('form-id').value;
+  const title = document.getElementById('form-title').value.trim();
+  const desc = document.getElementById('form-desc').value.trim();
+  const goal = document.getElementById('form-goal').value;
+
+  if(!title && !saveAsDraft) {
+    alert("Please enter a symptom description or save it as a draft note first.");
+    return;
+  }
+
+  if (id) {
+    // Editing an existing entry/draft
+    const match = problems.find(p => p.id === id);
+    if(match) {
+      match.title = title || "Untitled Draft Note";
+      match.desc = desc;
+      match.severity = selectedSeverity;
+      match.goal = goal;
+      match.isDraft = saveAsDraft;
+      if(!saveAsDraft) {
+        match.aiResult = generateMockAIResult(title, desc, goal);
+      }
+    }
+  } else {
+    // Creating brand new item
+    const newProblem = {
+      id: "p_" + Date.now(),
+      title: title || "Untitled Draft Note",
+      desc: desc,
+      severity: selectedSeverity,
+      goal: goal,
+      done: false,
+      isDraft: saveAsDraft
+    };
+    if (!saveAsDraft) {
+      newProblem.aiResult = generateMockAIResult(title, desc, goal);
+    }
+    problems.unshift(newProblem);
+  }
+
+  saveData();
+  renderProblems();
+  closeModal('modal-problem');
+}
+
+// DETAIL VIEWER FOR ACTIVE PROBLEMS
+function openDetail(id) {
+  const item = problems.find(p => p.id === id);
+  if (!item || item.isDraft) return;
+
+  const res = item.aiResult || generateMockAIResult(item.title, item.desc, item.goal);
+  
+  let partsHtml = '';
+  res.parts.forEach(pt => {
+    partsHtml += `
+      <div class="part-result">
+        <div class="part-result-top">
+          <div class="part-name">${pt.name}</div>
+          <div class="part-price">${pt.price}</div>
+        </div>
+        <div class="part-source">Sourced from <span>${pt.source}</span></div>
+        <a href="${pt.url}" target="_blank" class="part-link">View Part on Store →</a>
+      </div>`;
+  });
+
+  let ytHtml = '';
+  res.videos.forEach(v => {
+    ytHtml += `
+      <a href="${v.url}" target="_blank" class="yt-result">
+        <div class="yt-thumb">📺</div>
+        <div class="yt-info">
+          <div class="yt-title">${v.title}</div>
+          <div class="yt-channel">${v.channel} · <span style="color:var(--text3)">${v.views}</span></div>
+        </div>
+      </a>`;
+  });
+
+  let tagsHtml = '';
+  res.tags.forEach(t => { tagsHtml += `<span class="tag">${t}</span>`; });
+
+  const content = document.getElementById('detail-content');
+  content.innerHTML = `
+    <div class="modal-header">
+      <div class="modal-title">${item.title}</div>
+      <div class="modal-sub">Goal: <span style="color:var(--accent); font-weight:700;">${getGoalLabel(item.goal)}</span> · Urgency Rank: <span style="color:var(--accent); font-weight:700;">${item.severity.toUpperCase()}</span></div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-title">AI Diagnosis Report</div>
+        <div class="ai-summary-box">${res.diagnosis}</div>
+        <div class="tag-row">${tagsHtml}</div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Estimated Cost Matrix</div>
+        <div class="cost-range">
+          <div class="cost-box diy">
+            <div class="cost-box-label">DIY Cost</div>
+            <div class="cost-box-val">${res.diyCost}</div>
+          </div>
+          <div class="cost-box shop">
+            <div class="cost-box-label">Shop Labor</div>
+            <div class="cost-box-val">${res.shopCost}</div>
+          </div>
+        </div>
+        <div class="pc-meta-item">Calculated Complexity: <span style="color:var(--text)">${res.difficulty}</span></div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Cheapest & Best Fit Parts</div>
+        ${partsHtml}
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Curated Video Tutorials</div>
+        ${ytHtml}
+      </div>
+
+      <div class="btn-row" style="margin-top:28px">
+        <button class="btn ${item.done ? 'btn-ghost' : 'btn-primary'}" onclick="toggleProblemDone('${item.id}')">
+          ${item.done ? 'Mark as Active 🔧' : 'Mark Fixed ✅'}
+        </button>
+        <button class="btn btn-red" onclick="deleteProblem('${item.id}')">Delete Entry</button>
+      </div>
+    </div>
+  `;
+  openModal('modal-detail');
+}
+
+function toggleProblemDone(id) {
+  const target = problems.find(p => p.id === id);
+  if(target) target.done = !target.done;
+  saveData();
+  renderProblems();
+  closeModal('modal-detail');
+}
+
+function deleteProblem(id) {
+  if(confirm("Permanently erase this record?")) {
+    problems = problems.filter(p => p.id !== id);
+    saveData();
+    renderProblems();
+    closeModal('modal-detail');
+  }
+}
+
+// MILEAGE & MAINTENANCE CONTROLS
+function updateMileage() {
+  const input = document.getElementById('input-mileage').value;
+  if(input && !isNaN(input)) {
+    currentMileage = parseInt(input);
+    saveData();
+    renderProblems();
+    renderScheduled();
+    document.getElementById('hdr-miles').innerText = currentMileage.toLocaleString();
+    closeModal('modal-mileage');
+  }
+}
+
+function logScheduledService(id, event) {
+  event.stopPropagation();
+  const service = scheduledMaintenance.find(s => s.id === id);
+  if(service) {
+    service.lastDone = currentMileage;
+    saveData();
+    renderScheduled();
+    alert(`Successfully completed! Resetting counter for ${service.name} at current miles.`);
+  }
+}
+
+// MOCK INTELLIGENT COMPILER
+function buildGoalGuidance(goal) {
+  const guidance = {
+    'simple-maintenance': 'Prioritize quick reliability, safety checks, fluids, and parts that prevent roadside failures without expanding scope.',
+    'high-mileage-maintenance': 'Prioritize age-related wear, rubber components, fluids, seals, bearings, cooling system, and deferred maintenance common above 300k miles.',
+    'full-rebuild-high-mileage': 'Treat this as a long-term refresh. Group related labor, replace while-you-are-in-there parts, and prefer durable OEM-quality components.',
+    'daily-driver': 'Prioritize dependable starts, braking, steering, cooling, leaks, noise reduction, and fixes that keep downtime low.',
+    'off-road-build': 'Prioritize trail reliability, suspension/steering strength, recovery readiness, cooling, and drivetrain weak points.',
+    'budget-fix': 'Prioritize the cheapest safe fix first, then list optional upgrades separately.'
+  };
+  return guidance[goal] || guidance['simple-maintenance'];
+}
+
+function generateMockAIResult(title, desc, goal = 'simple-maintenance') {
+  const text = (title + " " + desc).toLowerCase();
+  const goalLabel = getGoalLabel(goal);
+  const goalGuidance = buildGoalGuidance(goal);
+  
+  if (text.includes("windshield") || text.includes("glass")) {
+    return {
+      diagnosis: `Goal: ${goalLabel}. Windshield damage matches outer layer safety seal compromises. Glass expansion might amplify under cabin temperature swings. ${goalGuidance}`,
+      difficulty: "Hard (Specialized urethane adhesives required)",
+      diyCost: "$140",
+      shopCost: "$380",
+      tags: [goalLabel, "Body Frame", "Glass Windows"],
+      parts: [
+        { name: "1998 4Runner Premium Molded Glass Seal", price: "$44.00", source: "RockAuto", url: "https://www.rockauto.com/en/parts/toyota,windshield+seal" }
+      ],
+      videos: [
+        { title: "Replacing Glass Trim and Mouldings cleanly", channel: "Toyota Restorations", views: "19K views", url: "https://www.youtube.com/results?search_query=1998+4runner+windshield+trim" }
+      ]
+    };
+  }
+  
+  return {
+    diagnosis: `Goal: ${goalLabel}. Heuristic parsing mapped custom input parameters against standard 1998 Toyota 3.4L 4WD component tolerances. ${goalGuidance}`,
+    difficulty: "Medium / Moderate DIY",
+    diyCost: "$65",
+    shopCost: "$210",
+    tags: [goalLabel, "Engine Deck", "Chassis Diagnostics"],
+    parts: [
+      { name: "Direct Aftermarket Component Match", price: "$49.99", source: "RockAuto", url: "https://www.rockauto.com" }
+    ],
+    videos: [
+      { title: `How to replace ${title || 'Chassis Components'} (Step-by-Step)`, channel: "4Runner Maintenance Hub", views: "45K views", url: "https://www.youtube.com" }
+    ]
+  };
+}
+
+// ── PRIVACY CAMERA & LIVE SCAN PROCESSING ──
+async function openCam() {
+  const overlay = document.getElementById('cam-overlay');
+  const video = document.getElementById('cam-video');
+  overlay.classList.add('open');
+  
+  document.getElementById('cam-reading').classList.remove('show');
+  document.getElementById('cam-result').classList.remove('show');
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
+    streamRef = stream;
+    video.srcObject = stream;
+  } catch (err) {
+    alert("Camera interface unavailable or permissions denied. Mocking automatic receipt capture text fields.");
+    simulateMockScan();
+  }
+}
+
+function closeCam() {
+  const overlay = document.getElementById('cam-overlay');
+  overlay.classList.remove('open');
+  if (streamRef) {
+    streamRef.getTracks().forEach(track => track.stop());
+    streamRef = null;
+  }
+}
+
+function captureAndRead() {
+  const video = document.getElementById('cam-video');
+  const canvas = document.getElementById('cam-canvas');
+  const readingOverlay = document.getElementById('cam-reading');
+
+  if (streamRef && video.videoWidth) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  }
+
+  // Flash visibility animation
+  readingOverlay.classList.add('show');
+
+  // Secure Memory Wipe: Clear context buffer immediately to comply with no-save privacy
+  setTimeout(() => {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Auto terminate active lens camera capture pipeline
+    if (streamRef) {
+      streamRef.getTracks().forEach(track => track.stop());
+      streamRef = null;
+    }
+    
+    processExtractedText();
+  }, 1400);
+}
+
+function simulateMockScan() {
+  document.getElementById('cam-reading').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('cam-reading').classList.remove('show');
+    processExtractedText();
+  }, 1000);
+}
+
+function processExtractedText() {
+  document.getElementById('cam-reading').classList.remove('show');
+  
+  // Random dynamic simulation of receipt vs sticker
+  const isReceipt = Math.random() > 0.4;
+  
+  if (isReceipt) {
+    currentScanData = {
+      title: "AutoZone Parts Receipt - O'Reilly Auto",
+      desc: "Scanned Parts Itemized: 1x Fuel Treatment Fluid, Premium Wiper Blades Set, heavy duty gear grease. Total Bill: $42.61",
+      severity: "low"
+    };
+  } else {
+    currentScanData = {
+      title: "Windshield Crack Repair Order Details",
+      desc: "Sourced quote parameters: Safelite Auto Glass replacement invoice draft. Secondary lower seal rubber kit needed.",
+      severity: "medium"
+    };
+  }
+
+  const container = document.getElementById('cam-extracted-fields');
+  container.innerHTML = `
+    <div class="extracted-row">
+      <div class="extracted-label">Title</div>
+      <input type="text" id="scan-edit-title" class="extracted-input" value="${currentScanData.title}">
+    </div>
+    <div class="extracted-row">
+      <div class="extracted-label">Notes</div>
+      <textarea id="scan-edit-desc" class="extracted-input" style="min-height:70px; resize:vertical;">${currentScanData.desc}</textarea>
+    </div>
+    <div class="extracted-row">
+      <div class="extracted-label">Goal</div>
+      <select id="scan-edit-goal" class="extracted-input">
+        <option value="simple-maintenance">Simple maintenance / keep it reliable</option>
+        <option value="high-mileage-maintenance">High mileage maintenance catch-up</option>
+        <option value="full-rebuild-high-mileage">Full rebuild for high mileage</option>
+        <option value="daily-driver">Daily driver reliability</option>
+        <option value="off-road-build">Off-road / trail-ready build</option>
+        <option value="budget-fix">Budget fix only</option>
+      </select>
+    </div>
+    <div class="extracted-row">
+      <div class="extracted-label">Urgency</div>
+      <select id="scan-edit-sev" class="extracted-input">
+        <option value="critical" ${currentScanData.severity === 'critical'?'selected':''}>Critical</option>
+        <option value="high" ${currentScanData.severity === 'high'?'selected':''}>High</option>
+        <option value="medium" ${currentScanData.severity === 'medium'?'selected':''}>Medium</option>
+        <option value="low" ${currentScanData.severity === 'low'?'selected':''}>Low</option>
+      </select>
+    </div>
+  `;
+
+  document.getElementById('cam-result').classList.add('show');
+}
+
+// DRAFTS WORKFLOW PIPELINE
+function saveAsDraftFromScan() {
+  const editedTitle = document.getElementById('scan-edit-title').value.trim();
+  const editedDesc = document.getElementById('scan-edit-desc').value.trim();
+  const editedSev = document.getElementById('scan-edit-sev').value;
+  const editedGoal = document.getElementById('scan-edit-goal').value;
+
+  const newDraft = {
+    id: "p_" + Date.now(),
+    title: editedTitle || "Untitled Draft Scan",
+    desc: editedDesc,
+    severity: editedSev,
+    goal: editedGoal,
+    done: false,
+    isDraft: true // Marked as an un-analyzed draft to finish later
+  };
+
+  problems.unshift(newDraft);
+  saveData();
+  renderProblems();
+  closeCam();
+}
+
+function confirmScanData() {
+  const editedTitle = document.getElementById('scan-edit-title').value.trim();
+  const editedDesc = document.getElementById('scan-edit-desc').value.trim();
+  const editedSev = document.getElementById('scan-edit-sev').value;
+
+  const newProblem = {
+    id: "p_" + Date.now(),
+    title: editedTitle || "Scanned Problem Item",
+    desc: editedDesc,
+    severity: editedSev,
+    goal: editedGoal,
+    done: false,
+    isDraft: false
+  };
+
+  newProblem.aiResult = generateMockAIResult(editedTitle, editedDesc, editedGoal);
+  
+  problems.unshift(newProblem);
+  saveData();
+  renderProblems();
+  closeCam();
+}
+
+
+
+// ── PROJECT PORTFOLIO / GOOGLE SITES PUBLISHER ──
+function saveSiteTarget() {
+  siteTarget = {
+    name: document.getElementById('site-page-name').value.trim(),
+    url: document.getElementById('site-page-url').value.trim()
+  };
+  saveData();
+  alert('Google Sites publishing target saved.');
+}
+
+function renderPortfolio() {
+  const container = document.getElementById('portfolio-list');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (portfolioEntries.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">📚</div>
+        <div class="empty-title">No Build Updates Yet</div>
+        <div class="empty-sub">Take photos, add quick notes, and build a clean project portfolio over time.</div>
+      </div>`;
+    return;
+  }
+
+  portfolioEntries.slice().sort((a,b) => b.createdAt - a.createdAt).forEach(entry => {
+    const card = document.createElement('div');
+    card.className = 'portfolio-card';
+    card.onclick = () => openPortfolioDetail(entry.id);
+    const dateText = new Date(entry.createdAt).toLocaleDateString();
+    const photoHtml = (entry.photos || []).slice(0, 5).map(src => `<img src="${src}" class="portfolio-photo-thumb" alt="Project photo">`).join('');
+    card.innerHTML = `
+      <div class="portfolio-top">
+        <div>
+          <div class="portfolio-title">${entry.title || 'Untitled Build Update'}</div>
+          <div class="portfolio-meta">${entry.project || '4Runner Project'} · ${entry.category} · ${dateText}</div>
+        </div>
+        <span class="badge badge-diy">${(entry.photos || []).length} photos</span>
+      </div>
+      <div class="portfolio-desc">${entry.polishedText}</div>
+      ${photoHtml ? `<div class="portfolio-photos">${photoHtml}</div>` : ''}
+      <div class="pc-action"><span class="pc-action-text" style="color:#4a9eff">View, copy, or publish →</span></div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function openAddPortfolio() {
+  document.getElementById('portfolio-modal-title').innerText = 'New Build Update';
+  document.getElementById('portfolio-id').value = '';
+  document.getElementById('portfolio-project').value = '1998 4Runner Refresh';
+  document.getElementById('portfolio-title').value = '';
+  document.getElementById('portfolio-category').value = 'Maintenance';
+  document.getElementById('portfolio-notes').value = '';
+  document.getElementById('portfolio-photos').value = '';
+  openModal('modal-portfolio');
+}
+
+function polishPortfolioText(title, category, notes) {
+  const cleanNotes = notes.trim() || 'Documented progress on the vehicle build.';
+  return `${title || category + ' Update'}: ${cleanNotes} Work was documented for the build journal with photos, category, date, and notes so the project history stays organized for future reference.`;
+}
+
+function readPortfolioPhotos(files) {
+  const selected = Array.from(files || []).slice(0, 10);
+  return Promise.all(selected.map(file => new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  }))).then(results => results.filter(Boolean));
+}
+
+async function savePortfolioEntry() {
+  const project = document.getElementById('portfolio-project').value.trim();
+  const title = document.getElementById('portfolio-title').value.trim();
+  const category = document.getElementById('portfolio-category').value;
+  const notes = document.getElementById('portfolio-notes').value.trim();
+  const photos = await readPortfolioPhotos(document.getElementById('portfolio-photos').files);
+
+  const entry = {
+    id: 'j_' + Date.now(),
+    project: project || '1998 4Runner Refresh',
+    title: title || category + ' Update',
+    category,
+    rawNotes: notes,
+    polishedText: polishPortfolioText(title, category, notes),
+    photos,
+    createdAt: Date.now()
+  };
+
+  portfolioEntries.unshift(entry);
+  saveData();
+  renderPortfolio();
+  closeModal('modal-portfolio');
+}
+
+function buildPublishHtml(entry) {
+  const dateText = new Date(entry.createdAt).toLocaleDateString();
+  const photoNotes = (entry.photos || []).length ? `<p><strong>Photos:</strong> ${(entry.photos || []).length} photo(s) attached in the app. Upload/select those photos in Google Sites, then paste this text below them.</p>` : '';
+  return `<h2>${entry.title}</h2>\n<p><strong>Date:</strong> ${dateText}</p>\n<p><strong>Project:</strong> ${entry.project}</p>\n<p><strong>Category:</strong> ${entry.category}</p>\n${photoNotes}\n<p>${entry.polishedText}</p>`;
+}
+
+function openPortfolioDetail(id) {
+  const entry = portfolioEntries.find(e => e.id === id);
+  if (!entry) return;
+  const publishHtml = buildPublishHtml(entry);
+  const photoHtml = (entry.photos || []).map(src => `<img src="${src}" class="portfolio-photo-thumb" style="width:96px;height:72px" alt="Project photo">`).join('');
+  document.getElementById('detail-content').innerHTML = `
+    <div class="modal-header">
+      <div class="modal-title">${entry.title}</div>
+      <div class="modal-sub">${entry.project} · ${entry.category} · ${new Date(entry.createdAt).toLocaleDateString()}</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-title">Portfolio Write-Up</div>
+        <div class="ai-summary-box">${entry.polishedText}</div>
+        ${photoHtml ? `<div class="portfolio-photos">${photoHtml}</div>` : ''}
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Google Sites Publish Block</div>
+        <div class="publish-box">Copy this block into your selected Google Sites page. The button below also tries to copy it automatically and open your saved page.</div>
+        <textarea id="publish-output" class="publish-output" readonly>${publishHtml}</textarea>
+      </div>
+      <div class="btn-row" style="margin-top:24px">
+        <button class="btn btn-blue" onclick="publishPortfolioEntry('${entry.id}')">Copy & Open Google Sites</button>
+        <button class="btn btn-red" onclick="deletePortfolioEntry('${entry.id}')">Delete Entry</button>
+      </div>
+    </div>`;
+  openModal('modal-detail');
+}
+
+async function publishPortfolioEntry(id) {
+  const entry = portfolioEntries.find(e => e.id === id);
+  if (!entry) return;
+  const publishHtml = buildPublishHtml(entry);
+  try {
+    await navigator.clipboard.writeText(publishHtml);
+    alert('Publish block copied. Paste it into your Google Sites page.');
+  } catch (err) {
+    const output = document.getElementById('publish-output');
+    if (output) output.select();
+    alert('Copy blocked by browser. Select the publish block and copy it manually.');
+  }
+  if (siteTarget.url) window.open(siteTarget.url, '_blank');
+}
+
+function deletePortfolioEntry(id) {
+  if (confirm('Delete this portfolio entry?')) {
+    portfolioEntries = portfolioEntries.filter(e => e.id !== id);
+    saveData();
+    renderPortfolio();
+    closeModal('modal-detail');
+  }
+}
+
+// BOOT ENGINE
+window.onload = function() {
+  loadData();
+  renderProblems();
+  renderScheduled();
+  renderPortfolio();
+};
+</script>
+
+</body>
+</html>
