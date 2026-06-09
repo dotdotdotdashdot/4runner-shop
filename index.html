@@ -673,6 +673,34 @@ body {
   font-weight: 600;
   margin-bottom: 14px;
 }
+
+
+/* -- FIREBASE AUTH / CLOUD SYNC -- */
+.auth-bar {
+  padding: 8px 18px 10px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.auth-status { font-size: 12px; color: var(--text2); line-height: 1.3; }
+.auth-status strong { color: var(--green); }
+.auth-actions { display: flex; gap: 8px; }
+.auth-btn {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.auth-btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+.auth-btn:active { opacity: 0.85; }
+
 </style>
 </head>
 <body>
@@ -686,6 +714,14 @@ body {
     <div class="mileage-pill" onclick="openModal('modal-mileage')">
       <span id="hdr-miles">373,077</span> mi
     </div>
+  </div>
+</div>
+
+<div class="auth-bar">
+  <div class="auth-status" id="auth-status">Cloud sync: <span>Not signed in</span></div>
+  <div class="auth-actions">
+    <button class="auth-btn primary" id="btn-signin" onclick="signInWithGoogle()">Sign in</button>
+    <button class="auth-btn" id="btn-signout" onclick="signOutUser()" style="display:none;">Sign out</button>
   </div>
 </div>
 
@@ -913,8 +949,135 @@ body {
   </div>
 </div>
 
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
 <script>
 // INITIAL DATA
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAUqVihQRS11D8HkKr5Y57HJsBiUMUcSmM",
+  authDomain: "runner-shop-817e3.firebaseapp.com",
+  projectId: "runner-shop-817e3",
+  storageBucket: "runner-shop-817e3.firebasestorage.app",
+  messagingSenderId: "551511891783",
+  appId: "1:551511891783:web:a144235baaac2409a87662"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let currentUser = null;
+let cloudReady = false;
+let isSavingCloud = false;
+
+function getUserDocRef() {
+  if (!currentUser) return null;
+  return db.collection('users').doc(currentUser.uid).collection('vehicles').doc('main-4runner');
+}
+
+function collectAppState() {
+  return {
+    currentMileage,
+    problems,
+    scheduledMaintenance,
+    portfolioEntries,
+    siteTarget,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+
+function applyAppState(data) {
+  if (!data) return;
+  if (typeof data.currentMileage === 'number') currentMileage = data.currentMileage;
+  if (Array.isArray(data.problems)) problems = data.problems;
+  if (Array.isArray(data.scheduledMaintenance)) scheduledMaintenance = data.scheduledMaintenance;
+  if (Array.isArray(data.portfolioEntries)) portfolioEntries = data.portfolioEntries;
+  if (data.siteTarget) siteTarget = data.siteTarget;
+  localSaveData();
+  refreshAllViews();
+}
+
+function refreshAllViews() {
+  document.getElementById('hdr-miles').innerText = currentMileage.toLocaleString();
+  document.getElementById('input-mileage').value = currentMileage;
+  const siteNameInput = document.getElementById('site-page-name');
+  const siteUrlInput = document.getElementById('site-page-url');
+  if (siteNameInput) siteNameInput.value = siteTarget.name || '';
+  if (siteUrlInput) siteUrlInput.value = siteTarget.url || '';
+  renderProblems();
+  renderScheduled();
+  renderPortfolio();
+}
+
+function setAuthStatus(text, signedIn = false) {
+  const el = document.getElementById('auth-status');
+  if (el) el.innerHTML = signedIn ? `Cloud sync: <strong>${text}</strong>` : `Cloud sync: <span>${text}</span>`;
+  const signIn = document.getElementById('btn-signin');
+  const signOut = document.getElementById('btn-signout');
+  if (signIn) signIn.style.display = signedIn ? 'none' : 'inline-block';
+  if (signOut) signOut.style.display = signedIn ? 'inline-block' : 'none';
+}
+
+async function signInWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      await auth.signInWithRedirect(provider);
+    } else {
+      await auth.signInWithPopup(provider);
+    }
+  } catch (err) {
+    alert('Google sign-in failed: ' + err.message);
+  }
+}
+
+async function signOutUser() {
+  await auth.signOut();
+}
+
+async function saveCloudData() {
+  const ref = getUserDocRef();
+  if (!ref || isSavingCloud) return;
+  isSavingCloud = true;
+  try {
+    await ref.set(collectAppState(), { merge: true });
+    setAuthStatus('Saved to cloud', true);
+  } catch (err) {
+    console.error(err);
+    setAuthStatus('Cloud save error', true);
+  } finally {
+    isSavingCloud = false;
+  }
+}
+
+async function loadCloudData() {
+  const ref = getUserDocRef();
+  if (!ref) return;
+  const snap = await ref.get();
+  if (snap.exists) {
+    applyAppState(snap.data());
+    setAuthStatus('Synced privately', true);
+  } else {
+    await ref.set(collectAppState(), { merge: true });
+    setAuthStatus('Cloud record created', true);
+  }
+}
+
+auth.onAuthStateChanged(async user => {
+  currentUser = user;
+  if (user) {
+    cloudReady = true;
+    setAuthStatus('Signing in...', true);
+    await loadCloudData();
+  } else {
+    cloudReady = false;
+    setAuthStatus('Not signed in');
+  }
+});
+
 let currentMileage = 373077;
 let activeFilter = 'all';
 let selectedSeverity = 'medium';
@@ -992,7 +1155,7 @@ let scheduledMaintenance = [
 ];
 
 // LOCALSTORAGE CONTROLS
-function loadData() {
+function localLoadData() {
   const localMiles = localStorage.getItem('4r_miles');
   if (localMiles) currentMileage = parseInt(localMiles);
   
@@ -1016,12 +1179,21 @@ function loadData() {
   if (siteUrlInput) siteUrlInput.value = siteTarget.url || '';
 }
 
-function saveData() {
+function localSaveData() {
   localStorage.setItem('4r_miles', currentMileage);
   localStorage.setItem('4r_probs', JSON.stringify(problems));
   localStorage.setItem('4r_sched', JSON.stringify(scheduledMaintenance));
   localStorage.setItem('4r_portfolio', JSON.stringify(portfolioEntries));
   localStorage.setItem('4r_site_target', JSON.stringify(siteTarget));
+}
+
+function saveData() {
+  localSaveData();
+  if (cloudReady && currentUser) saveCloudData();
+}
+
+function loadData() {
+  localLoadData();
 }
 
 // NAVIGATION
@@ -1604,6 +1776,7 @@ function confirmScanData() {
   const editedTitle = document.getElementById('scan-edit-title').value.trim();
   const editedDesc = document.getElementById('scan-edit-desc').value.trim();
   const editedSev = document.getElementById('scan-edit-sev').value;
+  const editedGoal = document.getElementById('scan-edit-goal').value;
 
   const newProblem = {
     id: "p_" + Date.now(),
